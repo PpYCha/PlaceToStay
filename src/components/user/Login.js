@@ -9,7 +9,8 @@ import {
   IconButton,
   TextField,
 } from "@mui/material";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { login, register } from "../../actions/user";
 import { useValue } from "../../context/ContextProvider";
 import GoogleOneTapLogin from "./GoogleOneTapLogin";
 import PasswordField from "./PasswordField";
@@ -19,7 +20,6 @@ const Login = () => {
     state: { openLogin },
     dispatch,
   } = useValue();
-
   const [title, setTitle] = useState("Login");
   const [isRegister, setIsRegister] = useState(false);
   const nameRef = useRef();
@@ -33,21 +33,13 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    //Tesing Loading
-    dispatch({ type: "START_LOADING" });
-
-    setTimeout(() => {
-      dispatch({ type: "END_LOADING" });
-    }, 6000);
-
-    //testing Notification
-
+    const email = emailRef.current.value;
     const password = passwordRef.current.value;
+    if (!isRegister) return login({ email, password }, dispatch);
+    const name = nameRef.current.value;
     const confirmPassword = confirmPasswordRef.current.value;
-
-    if (password !== confirmPassword) {
-      dispatch({
+    if (password !== confirmPassword)
+      return dispatch({
         type: "UPDATE_ALERT",
         payload: {
           open: true,
@@ -55,13 +47,12 @@ const Login = () => {
           message: "Passwords do not match",
         },
       });
-    }
+    register({ name, email, password }, dispatch);
   };
 
   useEffect(() => {
     isRegister ? setTitle("Register") : setTitle("Login");
   }, [isRegister]);
-
   return (
     <Dialog open={openLogin} onClose={handleClose}>
       <DialogTitle>
@@ -112,7 +103,7 @@ const Login = () => {
           {isRegister && (
             <PasswordField
               passwordRef={confirmPasswordRef}
-              id="confirmPasswordRef"
+              id="confirmPassword"
               label="Confirm Password"
             />
           )}
@@ -125,8 +116,8 @@ const Login = () => {
       </form>
       <DialogActions sx={{ justifyContent: "left", p: "5px 24px" }}>
         {isRegister
-          ? "Do you have an account? Sign in now"
-          : "Don't have an account? Create one now"}
+          ? "Do you have an account? Sign in now "
+          : "Don't you have an account? Create one now "}
         <Button onClick={() => setIsRegister(!isRegister)}>
           {isRegister ? "Login" : "Register"}
         </Button>
